@@ -1,0 +1,101 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>mineSweeper</title>
+    <link rel = "stylesheet" href="minesweeper.css">
+  </head>
+  <body>
+<script>
+      const size = 3;
+      let arr=[];
+      const getValue=(r,c)=>{
+        return (arr[r] && arr[r][c] && arr[r][c].getBomb())?1:0;
+      };
+const isGameOver=(i=0, j=0)=>{
+        if(i === arr.length) return true;
+        if(j === arr.length) return isGameOver(i+1, 0);
+        if(arr[i][j].isEmpty()) return false;
+        return isGameOver(i, j+1);
+      };
+ function Box(i,j){
+        const boxDiv = document.createElement('div');
+        boxDiv.className = 'block';
+        let isBomb = false;
+        document.body.appendChild(boxDiv);
+ boxDiv.oncontextmenu =(e)=>{
+          if(boxDiv.className.includes('selected')) return;
+          boxDiv.className += ' flagged';
+          e.preventDefault();
+        };
+this.setBomb=()=>{
+          isBomb = true;
+        }
+        this.isEmpty=()=>{
+          return !(boxDiv.className.includes('selected') || isBomb);
+        };
+        this.getBomb=()=>{
+          return isBomb;
+        }
+        boxDiv.onclick=()=>{
+          if(boxDiv.className.includes('selected')) return;
+          if (isGameOver()){
+            if(confirm("You Win. Play Again?"))
+              return startGame();
+          };
+          boxDiv.className = "block selected"; 
+          if(isBomb){
+            if(confirm("You Lose. Play Again?")){
+              startGame();
+            }
+            return boxDiv.innerHTML = "B";
+          }
+          const dirs = [
+            [i-1,j-1],
+            [i-1,j],
+            [i-1,j+1],
+            [i,j-1],
+            [i,j+1],
+            [i+1,j-1],
+            [i+1,j],
+            [i+1,j+1]
+          ]
+          const num = dirs.reduce((acc,d)=> acc+getValue(...d),0);
+          boxDiv.innerHTML = num || '';
+          if(num) return;
+          dirs.forEach(([r,c])=>
+            arr[r] && arr[r][c] && arr[r][c].select()
+          )
+        }
+        this.select=()=>{
+          return boxDiv.onclick();
+        };
+      }
+      const build=(i=0, j=0, temp=[])=>{
+        if(i === size) return;
+        if(j === size) {
+          arr.push(temp);
+          return build(i+1, j=0, []);
+        }
+        temp.push(new Box(i,j));
+        return build(i, j+1, temp);
+      };
+      const setBombs=(i=0)=>{
+        if(i === size) return;
+        const r = Math.floor(Math.random()*size);
+        const c = Math.floor(Math.random()*size);
+        if(arr[r][c].getBomb())
+          return setBombs(i);
+        arr[r][c].setBomb();
+        return setBombs(i+1);
+      };
+      const startGame=()=>{
+        arr=[];
+        document.body.innerHTML = "";
+        build();
+        setBombs();
+        document.body.style.width = `${size*50}px`;
+      };
+      startGame();
+    </script>
+  </body>
+</html>
